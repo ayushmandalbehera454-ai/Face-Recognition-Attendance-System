@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block heading %}Your profile{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-6"><form class="card p-3" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="details">
+    <h2 class="h6 mb-3">Details</h2>
+    <label class="form-label" for="full_name">Full name</label>
+    <input class="form-control mb-2" id="full_name" name="full_name" value="{{ current_user.full_name }}" required>
+    <label class="form-label" for="email">Email</label>
+    <input class="form-control mb-3" id="email" name="email" type="email" value="{{ current_user.email }}" required>
+    <p class="small text-secondary">Username: <strong>{{ current_user.username }}</strong> &middot; Role: <strong>{{ current_user.role }}</strong></p>
+    <button class="btn btn-brand" type="submit">Save profile</button>
+  </form></div>
+  <div class="col-lg-6"><form class="card p-3" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="password">
+    <h2 class="h6 mb-3">Change password</h2>
+    <label class="form-label" for="old_password">Current password</label>
+    <input class="form-control mb-2" id="old_password" name="old_password" type="password" autocomplete="current-password" required>
+    <label class="form-label" for="new_password">New password</label>
+    <input class="form-control mb-2" id="new_password" name="new_password" type="password" autocomplete="new-password" minlength="8" required>
+    <label class="form-label" for="confirm_password">Confirm new password</label>
+    <input class="form-control mb-3" id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+    <button class="btn btn-brand" type="submit">Change password</button>
+  </form></div>
+</div>
+{% endblock %}

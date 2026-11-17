@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ s.name }}{% endblock %}
+{% block heading %}Edit profile{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-5">
+    <form class="card p-3" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h2 class="h6 mb-3">Details</h2>
+      <label class="form-label" for="name">Full name</label>
+      <input class="form-control mb-2" id="name" name="name" value="{{ s.name }}" maxlength="80" required>
+      <label class="form-label" for="student_code">ID</label>
+      <input class="form-control mb-2" id="student_code" name="student_code" value="{{ s.student_code }}" maxlength="30" required>
+      <label class="form-label" for="email">Email</label>
+      <input class="form-control mb-2" id="email" name="email" type="email" value="{{ s.email }}" required>
+      <label class="form-label" for="department_id">Department</label>
+      <select class="form-select mb-3" id="department_id" name="department_id">
+        <option value="">None</option>
+        {% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if s.department_id == d.id }}>{{ d.name }}</option>{% endfor %}
+      </select>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" {{ 'checked' if s.active }}>
+        <label class="form-check-label" for="active">Active (inactive people are not recognised or counted)</label>
+      </div>
+      <div class="d-flex gap-2"><button class="btn btn-brand" type="submit">Save changes</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('students.students') }}">Cancel</a></div>
+    </form>
+  </div>
+  <div class="col-lg-7">
+    <div class="card p-3 mb-3" id="cameraCard">
+      <h2 class="h6">Face data: {% if s.has_face_data %}<span class="badge text-bg-success">{{ s.embeddings|length }} samples</span>{% else %}<span class="badge text-bg-secondary">none</span>{% endif %}</h2>
+      <p class="small text-secondary">Re-capture to improve recognition (replaces the old samples). Recording requires consent.</p>
+      <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="consent" {{ 'checked' if s.consent_given }}>
+        <label class="form-check-label" for="consent">The person consents to face recognition.</label></div>
+      <div class="cam-wrap"><video id="video" playsinline muted></video><div class="cam-hint" id="camHint">Camera is off</div></div>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <button class="btn btn-outline-secondary" id="startBtn"><i class="bi bi-camera-video me-1"></i>Start camera</button>
+        <button class="btn btn-brand" id="autoBtn" disabled>Auto-capture 5 photos</button>
+        <button class="btn btn-outline-secondary" id="snapBtn" disabled>Take one photo</button>
+        <button class="btn btn-outline-danger" id="clearBtn" disabled>Clear</button>
+        <button class="btn btn-brand" id="saveBtn" disabled>Save new face data</button>
+      </div>
+      <div class="thumbs mt-3" id="thumbs"></div>
+      <div class="small mt-2"><span id="photoCount">0</span> photos captured</div>
+    </div>
+    {% if s.has_face_data %}
+    <form class="card p-3" method="post" action="{{ url_for('students.withdraw_consent', sid=s.id) }}"
+          onsubmit='return confirm({{ ("Erase all face data for " ~ s.name ~ "?")|tojson }})'>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h2 class="h6">Withdraw consent</h2>
+      <p class="small text-secondary">Permanently erases this person's face data. Attendance history stays. They can still be marked manually.</p>
+      <button class="btn btn-outline-danger align-self-start" type="submit">Erase face data</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>window.ENROLL = {mode: 'recapture', endpoint: '/api/students/{{ s.id }}/faces', minImages: {{ min_images }}};</script>
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="{{ url_for('static', filename='js/enroll.js') }}"></script>
+{% endblock %}

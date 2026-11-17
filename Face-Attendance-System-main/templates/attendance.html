@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+{% block heading %}Attendance{% endblock %}
+{% block content %}
+<div class="row g-3 mb-3">
+  <div class="col-lg-7"><div class="card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h6 m-0">Live recognition</h2>
+      <span class="badge text-bg-secondary" id="liveState">Stopped</span>
+    </div>
+    <div class="cam-wrap" id="camWrap">
+      <video id="video" playsinline muted></video>
+      <canvas id="overlay"></canvas>
+      <div class="cam-hint" id="camHint">Press Start to open the camera</div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-brand" id="startBtn"><i class="bi bi-play-fill me-1"></i>Start recognition</button>
+      <button class="btn btn-outline-secondary" id="stopBtn" disabled><i class="bi bi-stop-fill me-1"></i>Stop</button>
+    </div>
+    <p class="small text-secondary mt-2 mb-0">Look at the camera and blink once so the system knows you are a live person.
+      A face that is not matched is never marked absent. An admin can mark it manually.</p>
+  </div></div>
+  <div class="col-lg-5"><div class="card p-3 h-100">
+    <h2 class="h6">In view now</h2>
+    <div id="liveList" class="live-list"><div class="text-secondary small">No faces detected yet.</div></div>
+  </div></div>
+</div>
+
+<div class="card p-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+    <h2 class="h6 m-0">Attendance records</h2>
+    {% if current_user.can_write %}<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#manualModal"><i class="bi bi-pencil-square me-1"></i>Manual entry or correction</button>{% endif %}
+  </div>
+  <form class="row g-2 mb-3" id="filterForm">
+    <div class="col-6 col-md-2"><label class="form-label small" for="fFrom">From</label><input class="form-control form-control-sm" type="date" id="fFrom" value="{{ today }}"></div>
+    <div class="col-6 col-md-2"><label class="form-label small" for="fTo">To</label><input class="form-control form-control-sm" type="date" id="fTo" value="{{ today }}"></div>
+    <div class="col-6 col-md-2"><label class="form-label small" for="fDept">Department</label>
+      <select class="form-select form-select-sm" id="fDept"><option value="">All</option>{% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label small" for="fStatus">Status</label>
+      <select class="form-select form-select-sm" id="fStatus"><option value="">All</option>{% for s in statuses %}<option>{{ s }}</option>{% endfor %}</select></div>
+    <div class="col-12 col-md-2"><label class="form-label small" for="fQ">Search</label><input class="form-control form-control-sm" id="fQ" placeholder="Name or ID"></div>
+    <div class="col-12 col-md-2 d-flex align-items-end"><button class="btn btn-sm btn-brand w-100" type="submit">Apply filters</button></div>
+  </form>
+  <div class="table-responsive"><table class="table align-middle mb-0">
+    <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Date</th><th>Time</th><th>Status</th><th>Method</th><th>Match %</th>{% if current_user.can_write %}<th></th>{% endif %}</tr></thead>
+    <tbody id="recBody"><tr><td colspan="9" class="text-secondary">Loading...</td></tr></tbody>
+  </table></div>
+</div>
+
+{% if current_user.can_write %}
+<div class="modal fade" id="manualModal" tabindex="-1" aria-labelledby="manualTitle" aria-hidden="true"><div class="modal-dialog"><div class="modal-content">
+  <div class="modal-header"><h2 class="modal-title h5" id="manualTitle">Manual attendance</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+  <div class="modal-body">
+    <label class="form-label" for="mStudent">Person</label>
+    <select class="form-select mb-2" id="mStudent">{% for s in students %}<option value="{{ s.id }}">{{ s.name }} ({{ s.student_code }})</option>{% endfor %}</select>
+    <div class="row g-2 mb-2">
+      <div class="col"><label class="form-label" for="mDate">Date</label><input class="form-control" type="date" id="mDate" value="{{ today }}" max="{{ today }}"></div>
+      <div class="col"><label class="form-label" for="mStatus">Status</label><select class="form-select" id="mStatus">{% for s in statuses %}<option>{{ s }}</option>{% endfor %}</select></div>
+    </div>
+    <label class="form-label" for="mNote">Reason</label>
+    <input class="form-control" id="mNote" maxlength="200" placeholder="e.g. Face match failed, verified by teacher">
+    <p class="small text-secondary mt-2 mb-0">This replaces any record for that person and date. The change is saved in the activity log.</p>
+  </div>
+  <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand" id="mSave">Save attendance</button></div>
+</div></div></div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>window.CAN_WRITE = {{ 'true' if current_user.can_write else 'false' }};</script>
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recognition.js') }}"></script>
+{% endblock %}

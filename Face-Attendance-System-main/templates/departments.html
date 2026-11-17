@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Departments{% endblock %}
+{% block heading %}Departments{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% if current_user.can_write %}
+  <div class="col-lg-4"><form class="card p-3" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h2 class="h6">Add department</h2>
+    <input class="form-control mb-3" name="name" placeholder="e.g. Computer Science" maxlength="80" required>
+    <button class="btn btn-brand" type="submit">Add department</button>
+  </form></div>
+  {% endif %}
+  <div class="col-lg-8"><div class="card"><div class="table-responsive"><table class="table align-middle mb-0">
+    <thead><tr><th>Department</th><th>People</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>
+    {% for d in departments %}
+      <tr><td>{{ d.name }}</td><td>{{ d.students|length }}</td><td class="text-end">
+        {% if current_user.can_write %}
+        <form class="d-inline" method="post" action="{{ url_for('students.delete_department', did=d.id) }}" onsubmit="return confirm('Delete this department?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button></form>
+        {% endif %}</td></tr>
+    {% else %}<tr><td colspan="3" class="text-center text-secondary py-4">No departments yet. Add one to organise people and reports.</td></tr>
+    {% endfor %}
+    </tbody></table></div></div></div>
+</div>
+{% endblock %}

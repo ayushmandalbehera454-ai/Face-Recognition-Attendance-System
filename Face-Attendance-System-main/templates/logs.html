@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Activity log{% endblock %}
+{% block heading %}Activity log{% endblock %}
+{% block content %}
+<div class="card"><div class="table-responsive"><table class="table table-sm align-middle mb-0">
+  <thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Details</th><th>IP</th></tr></thead>
+  <tbody>
+  {% for l in logs %}
+    <tr><td class="text-nowrap">{{ l.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>{{ l.admin.username if l.admin else '-' }}</td>
+        <td><span class="badge text-bg-{{ 'warning' if l.action == 'recognition_review' else 'secondary' }}">{{ l.action }}</span></td>
+        <td>{{ l.details }}</td><td>{{ l.ip_address or '' }}</td></tr>
+  {% else %}<tr><td colspan="5" class="text-center text-secondary py-4">No activity yet.</td></tr>
+  {% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

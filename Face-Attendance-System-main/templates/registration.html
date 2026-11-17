@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Register person{% endblock %}
+{% block heading %}Register a person{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card p-3">
+      <h2 class="h6 mb-3">Details</h2>
+      <div class="mb-2"><label class="form-label" for="name">Full name</label><input class="form-control" id="name" maxlength="80"></div>
+      <div class="mb-2"><label class="form-label" for="student_code">Student or employee ID</label><input class="form-control" id="student_code" maxlength="30"></div>
+      <div class="mb-2"><label class="form-label" for="email">Email</label><input class="form-control" id="email" type="email"></div>
+      <div class="mb-3"><label class="form-label" for="department_id">Department</label>
+        <select class="form-select" id="department_id"><option value="">None</option>
+          {% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}
+        </select></div>
+      <div class="consent-box">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="consent">
+          <label class="form-check-label" for="consent"><strong>I consent to face recognition for attendance.</strong></label>
+        </div>
+        <p class="small text-secondary mb-0 mt-2">We store only encrypted numeric face measurements, not photos. They are used only to mark attendance.
+          You can withdraw consent at any time and the data is erased. Without consent, attendance is marked manually by an admin and is never penalised.</p>
+      </div>
+      <button class="btn btn-brand mt-3" id="saveBtn">Register person</button>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card p-3" id="cameraCard">
+      <h2 class="h6">Face capture <span class="text-secondary fw-normal">(needs consent)</span></h2>
+      <div class="cam-wrap"><video id="video" playsinline muted></video><div class="cam-hint" id="camHint">Camera is off</div></div>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <button class="btn btn-outline-secondary" id="startBtn" disabled><i class="bi bi-camera-video me-1"></i>Start camera</button>
+        <button class="btn btn-brand" id="autoBtn" disabled><i class="bi bi-stars me-1"></i>Auto-capture 5 photos</button>
+        <button class="btn btn-outline-secondary" id="snapBtn" disabled><i class="bi bi-camera me-1"></i>Take one photo</button>
+        <button class="btn btn-outline-danger" id="clearBtn" disabled>Clear</button>
+      </div>
+      <p class="small text-secondary mt-2 mb-2">Use good light, face the camera, remove sunglasses. Need at least {{ min_images }} photos with one face each.</p>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="small mt-2"><span id="photoCount">0</span> photos captured</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>window.ENROLL = {mode: 'create', endpoint: '/api/students', minImages: {{ min_images }}};</script>
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="{{ url_for('static', filename='js/enroll.js') }}"></script>
+{% endblock %}
